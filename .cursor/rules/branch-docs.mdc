@@ -1,0 +1,29 @@
+---
+description: Задължителни стъпки преди завършване на всеки branch
+alwaysApply: true
+---
+
+# Завършване на branch — задължителен checklist
+
+Преди branch-ът да се счита за готов (преди merge/PR), НАПРАВИ И ТРИТЕ:
+
+## 1. Unit тестове
+
+- Напиши unit тестове (JUnit 5 + Mockito) за новата функционалност от branch-а.
+- Пусни `mvn -q test` и се увери, че минават.
+
+## 2. Документация в docs/PROJECT_LOG.md
+
+- Добави ред в таблицата в `docs/PROJECT_LOG.md` (най-новите НАЙ-ОТГОРЕ):
+  пореден номер (1/2/3/...), име на branch-а, дата, кратко обобщение какво е направено
+  (endpoint-и, таблици, решения). Този файл е паметта на проекта — при нов чат го чети,
+  за да знаеш какво е правено до сега, и той служи за референция на frontend-а.
+- При по-големи branch-ове добави и `docs/branches/<branch-name>.md` с детайли
+  (цел, направено, решения, как се тества).
+
+## 3. Postman колекция
+
+- Поддържай `postman/rezerv-cas.postman_collection.json` актуална: всеки нов/променен
+  endpoint се добавя/редактира в колекцията с готови request body-та с реални примерни
+  данни и example responses (success + error), така че всичко да се тества веднага.
+- Environment файлът е `postman/rezerv-local.postman_environment.json` (baseUrl, tokens).

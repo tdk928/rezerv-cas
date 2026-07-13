@@ -1,0 +1,31 @@
+---
+description: Java/Spring конвенции за rezerv-cas
+alwaysApply: true
+---
+
+# Java конвенции (rezerv-cas)
+
+Пълната архитектура е в `/Users/teodorkalev/Desktop/rezerv/REZERV.md` (single source of truth).
+
+## Език и стек — само модерното, никакво legacy
+
+- Java 21, Spring Boot 3.x, Maven. Virtual threads включени (`spring.threads.virtual.enabled=true`).
+- Използвай най-новите възможности на езика: records, sealed interfaces, pattern matching
+  за switch, text blocks. НЕ използвай legacy: `new Date()`, `SimpleDateFormat`,
+  field injection (`@Autowired` на поле), XML конфигурация, `RestTemplate` (→ `RestClient`).
+- Constructor injection навсякъде (при 1 конструктор не трябва анотация).
+
+## DTO-та: records first
+
+- **Records за всичко освен JPA entities**: request/response DTO-та, команди, query
+  резултати, `@ConfigurationProperties`. Придържай се към record винаги, когато е възможно.
+- **Lombok САМО за JPA entities**: `@Getter/@Setter/@Builder/@NoArgsConstructor(access = PROTECTED)/@AllArgsConstructor(access = PRIVATE)`. Никога `@Data` на entity.
+- Jakarta Validation анотации директно върху request records.
+
+## Слоеве и грешки
+
+- `web` → `service` → `repository` + `domain`. Controller-ите връщат само records, никога entities.
+- Единен `@RestControllerAdvice` → ErrorResponse формат:
+  `{ "status", "code", "message", "correlationId", "timestamp" }`.
+- Flyway миграции в `db/migration`, `V<N>__описание.sql`; приложена миграция НЕ се редактира.
+- Константи за header имена; SLF4J с параметризирани логове; `mvn -q compile` преди commit.
