@@ -1,0 +1,215 @@
+{
+  "info": {
+    "name": "rezerv-cas",
+    "description": "Central Auth Service на REZERV. Директно към сервиза: {{baseUrl}} = http://localhost:8081. През gateway ползвай http://localhost:8080/api и същите пътища.\n\nLogin/Register/Refresh автоматично записват accessToken и refreshToken в environment-а.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [],
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Register",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const json = pm.response.json();",
+                  "    pm.environment.set('accessToken', json.accessToken);",
+                  "    pm.environment.set('refreshToken', json.refreshToken);",
+                  "    pm.environment.set('userId', json.user.id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/auth/register", "host": ["{{baseUrl}}"], "path": ["auth", "register"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"ivan.ivanov@example.bg\",\n  \"password\": \"parola123\",\n  \"firstName\": \"Иван\",\n  \"lastName\": \"Иванов\",\n  \"phone\": \"+359888123456\"\n}"
+            }
+          },
+          "response": [
+            {
+              "name": "201 Created",
+              "originalRequest": {
+                "method": "POST",
+                "url": { "raw": "{{baseUrl}}/auth/register", "host": ["{{baseUrl}}"], "path": ["auth", "register"] },
+                "body": { "mode": "raw", "raw": "{\n  \"email\": \"ivan.ivanov@example.bg\",\n  \"password\": \"parola123\",\n  \"firstName\": \"Иван\",\n  \"lastName\": \"Иванов\",\n  \"phone\": \"+359888123456\"\n}" }
+              },
+              "status": "Created",
+              "code": 201,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"accessToken\": \"eyJhbGciOiJIUzI1NiJ9...\",\n  \"refreshToken\": \"3f1c9a4e-8d2b-4c7a-9e1f-2b6d8a5c4e3f\",\n  \"expiresInSeconds\": 900,\n  \"user\": {\n    \"id\": 2,\n    \"email\": \"ivan.ivanov@example.bg\",\n    \"phone\": \"+359888123456\",\n    \"firstName\": \"Иван\",\n    \"lastName\": \"Иванов\",\n    \"companyId\": null,\n    \"status\": \"ACTIVE\",\n    \"roles\": [\"CLIENT\"],\n    \"createdAt\": \"2026-07-13T20:00:00Z\"\n  }\n}"
+            },
+            {
+              "name": "409 Email вече съществува",
+              "originalRequest": {
+                "method": "POST",
+                "url": { "raw": "{{baseUrl}}/auth/register", "host": ["{{baseUrl}}"], "path": ["auth", "register"] },
+                "body": { "mode": "raw", "raw": "{\n  \"email\": \"ivan.ivanov@example.bg\",\n  \"password\": \"parola123\",\n  \"firstName\": \"Иван\",\n  \"lastName\": \"Иванов\"\n}" }
+              },
+              "status": "Conflict",
+              "code": 409,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"status\": 409,\n  \"code\": \"EMAIL_ALREADY_EXISTS\",\n  \"message\": \"Потребител с този email вече съществува\",\n  \"correlationId\": \"6f9a...\",\n  \"timestamp\": \"2026-07-13T20:00:00Z\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const json = pm.response.json();",
+                  "    pm.environment.set('accessToken', json.accessToken);",
+                  "    pm.environment.set('refreshToken', json.refreshToken);",
+                  "    pm.environment.set('userId', json.user.id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/auth/login", "host": ["{{baseUrl}}"], "path": ["auth", "login"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@rezerv.bg\",\n  \"password\": \"admin123\"\n}"
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK (dev seed админ)",
+              "originalRequest": {
+                "method": "POST",
+                "url": { "raw": "{{baseUrl}}/auth/login", "host": ["{{baseUrl}}"], "path": ["auth", "login"] },
+                "body": { "mode": "raw", "raw": "{\n  \"email\": \"admin@rezerv.bg\",\n  \"password\": \"admin123\"\n}" }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"accessToken\": \"eyJhbGciOiJIUzI1NiJ9...\",\n  \"refreshToken\": \"7c2e5b1a-4f8d-4a3c-b9e6-1d5f8c2a7b4e\",\n  \"expiresInSeconds\": 900,\n  \"user\": {\n    \"id\": 1,\n    \"email\": \"admin@rezerv.bg\",\n    \"phone\": null,\n    \"firstName\": \"Platform\",\n    \"lastName\": \"Admin\",\n    \"companyId\": null,\n    \"status\": \"ACTIVE\",\n    \"roles\": [\"PLATFORM_ADMIN\"],\n    \"createdAt\": \"2026-07-13T20:00:00Z\"\n  }\n}"
+            },
+            {
+              "name": "401 Грешни credentials",
+              "originalRequest": {
+                "method": "POST",
+                "url": { "raw": "{{baseUrl}}/auth/login", "host": ["{{baseUrl}}"], "path": ["auth", "login"] },
+                "body": { "mode": "raw", "raw": "{\n  \"email\": \"admin@rezerv.bg\",\n  \"password\": \"greshna\"\n}" }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"status\": 401,\n  \"code\": \"INVALID_CREDENTIALS\",\n  \"message\": \"Грешен email или парола\",\n  \"correlationId\": \"6f9a...\",\n  \"timestamp\": \"2026-07-13T20:00:00Z\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Refresh",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const json = pm.response.json();",
+                  "    pm.environment.set('accessToken', json.accessToken);",
+                  "    pm.environment.set('refreshToken', json.refreshToken);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/auth/refresh", "host": ["{{baseUrl}}"], "path": ["auth", "refresh"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}"
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK (rotation — старият token вече е невалиден)",
+              "originalRequest": {
+                "method": "POST",
+                "url": { "raw": "{{baseUrl}}/auth/refresh", "host": ["{{baseUrl}}"], "path": ["auth", "refresh"] },
+                "body": { "mode": "raw", "raw": "{\n  \"refreshToken\": \"7c2e5b1a-4f8d-4a3c-b9e6-1d5f8c2a7b4e\"\n}" }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"accessToken\": \"eyJhbGciOiJIUzI1NiJ9...(нов)\",\n  \"refreshToken\": \"a1b2c3d4-...(нов)\",\n  \"expiresInSeconds\": 900,\n  \"user\": { \"id\": 1, \"email\": \"admin@rezerv.bg\", \"roles\": [\"PLATFORM_ADMIN\"], \"status\": \"ACTIVE\", \"firstName\": \"Platform\", \"lastName\": \"Admin\", \"phone\": null, \"companyId\": null, \"createdAt\": \"2026-07-13T20:00:00Z\" }\n}"
+            },
+            {
+              "name": "401 Невалиден/ползван refresh token",
+              "originalRequest": {
+                "method": "POST",
+                "url": { "raw": "{{baseUrl}}/auth/refresh", "host": ["{{baseUrl}}"], "path": ["auth", "refresh"] },
+                "body": { "mode": "raw", "raw": "{\n  \"refreshToken\": \"vece-polzvan-token\"\n}" }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"status\": 401,\n  \"code\": \"INVALID_REFRESH_TOKEN\",\n  \"message\": \"Невалиден или изтекъл refresh token\",\n  \"correlationId\": \"6f9a...\",\n  \"timestamp\": \"2026-07-13T20:00:00Z\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Me",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-User-Id",
+                "value": "{{userId}}",
+                "description": "В production този header го закача gateway-ят от JWT-то. Директно към сервиза го подаваш ръчно."
+              }
+            ],
+            "url": { "raw": "{{baseUrl}}/auth/me", "host": ["{{baseUrl}}"], "path": ["auth", "me"] }
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "originalRequest": {
+                "method": "GET",
+                "header": [{ "key": "X-User-Id", "value": "1" }],
+                "url": { "raw": "{{baseUrl}}/auth/me", "host": ["{{baseUrl}}"], "path": ["auth", "me"] }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"id\": 1,\n  \"email\": \"admin@rezerv.bg\",\n  \"phone\": null,\n  \"firstName\": \"Platform\",\n  \"lastName\": \"Admin\",\n  \"companyId\": null,\n  \"status\": \"ACTIVE\",\n  \"roles\": [\"PLATFORM_ADMIN\"],\n  \"createdAt\": \"2026-07-13T20:00:00Z\"\n}"
+            },
+            {
+              "name": "401 Без X-User-Id header",
+              "originalRequest": {
+                "method": "GET",
+                "url": { "raw": "{{baseUrl}}/auth/me", "host": ["{{baseUrl}}"], "path": ["auth", "me"] }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"status\": 401,\n  \"code\": \"UNAUTHORIZED\",\n  \"message\": \"Липсва автентикация\",\n  \"correlationId\": \"6f9a...\",\n  \"timestamp\": \"2026-07-13T20:00:00Z\"\n}"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
