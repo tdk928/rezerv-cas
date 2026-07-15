@@ -210,6 +210,62 @@
           ]
         }
       ]
+    },
+    {
+      "name": "Internal (service-to-service)",
+      "description": "Gateway НЕ route-ва /internal/** — само директно към CAS :8081 от други сервизи (напр. rezerv-business след onboarding).",
+      "item": [
+        {
+          "name": "Assign company to user",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{baseUrl}}/internal/users/{{userId}}/assign-company",
+              "host": ["{{baseUrl}}"],
+              "path": ["internal", "users", "{{userId}}", "assign-company"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"companyId\": 1\n}"
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "originalRequest": {
+                "method": "POST",
+                "url": {
+                  "raw": "{{baseUrl}}/internal/users/2/assign-company",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["internal", "users", "2", "assign-company"]
+                },
+                "body": { "mode": "raw", "raw": "{\n  \"companyId\": 10\n}" }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"id\": 2,\n  \"email\": \"ivan.ivanov@example.bg\",\n  \"phone\": \"+359888123456\",\n  \"firstName\": \"Иван\",\n  \"lastName\": \"Иванов\",\n  \"companyId\": 10,\n  \"status\": \"ACTIVE\",\n  \"roles\": [\"BUSINESS_OWNER\", \"CLIENT\"],\n  \"createdAt\": \"2026-07-13T20:00:00Z\"\n}"
+            },
+            {
+              "name": "409 Вече има companyId",
+              "originalRequest": {
+                "method": "POST",
+                "url": {
+                  "raw": "{{baseUrl}}/internal/users/2/assign-company",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["internal", "users", "2", "assign-company"]
+                },
+                "body": { "mode": "raw", "raw": "{\n  \"companyId\": 99\n}" }
+              },
+              "status": "Conflict",
+              "code": 409,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"status\": 409,\n  \"code\": \"COMPANY_ALREADY_ASSIGNED\",\n  \"message\": \"Потребителят вече е свързан с фирма\",\n  \"correlationId\": \"6f9a...\",\n  \"timestamp\": \"2026-07-15T00:00:00Z\"\n}"
+            }
+          ]
+        }
+      ]
     }
   ]
 }

@@ -41,6 +41,8 @@ curl -X POST http://localhost:8081/internal/users/2/assign-company \
   -d '{"companyId":10}'
 ```
 
+Postman: папка **Internal (service-to-service)** → Assign company to user.
+
 ## За frontend-а
 След успешен `POST /api/business/companies` + assign в cas (от business):
 1. `POST /api/auth/refresh` с refresh token → нов access JWT с `companyId` и роля `BUSINESS_OWNER`.
