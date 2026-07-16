@@ -3,6 +3,7 @@ package bg.rezerv.cas.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -17,6 +18,7 @@ import bg.rezerv.cas.web.dto.LoginRequest;
 import bg.rezerv.cas.web.dto.RefreshRequest;
 import bg.rezerv.cas.web.dto.RegisterRequest;
 import bg.rezerv.cas.web.error.ApiException;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
@@ -44,6 +46,9 @@ class AuthServiceTest {
     @Mock
     private RefreshTokenService refreshTokenService;
 
+    @Mock
+    private CompanyAssignmentService companyAssignmentService;
+
     private final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder(4);
 
     private AuthService authService;
@@ -53,8 +58,13 @@ class AuthServiceTest {
     @BeforeEach
     void setUp() {
         authService = new AuthService(userRepository, roleRepository, passwordEncoder,
-                jwtService, refreshTokenService);
+                jwtService, refreshTokenService, companyAssignmentService);
         clientRole = Role.builder().id(4L).code("CLIENT").build();
+        lenient().when(companyAssignmentService.companyIdsFor(any())).thenReturn(List.of());
+        lenient().when(companyAssignmentService.toResponse(any())).thenAnswer(inv -> {
+            User u = inv.getArgument(0);
+            return bg.rezerv.cas.web.dto.UserResponse.from(u, List.of());
+        });
     }
 
     private User activeUser(String rawPassword) {

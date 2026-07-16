@@ -23,7 +23,8 @@ server:
 rezerv:
   jwt:
     secret: ${JWT_SECRET:dev-secret-change-me-0123456789abcdef0123456789abcdef}
-    access-ttl: 15m
+    # TEMP: 1m за тест на logout при изтекъл token; после → 30m
+    access-ttl: 1m
     refresh-ttl: 14d
 
 management:
