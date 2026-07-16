@@ -11,12 +11,15 @@ public record UserResponse(
         String phone,
         String firstName,
         String lastName,
+        /** Активна фирма (JWT companyId / X-Company-Id). */
         Long companyId,
+        /** Всички фирми, към които user-ът е свързан (membership). */
+        List<Long> companyIds,
         String status,
         List<String> roles,
         Instant createdAt) {
 
-    public static UserResponse from(User user) {
+    public static UserResponse from(User user, List<Long> companyIds) {
         return new UserResponse(
                 user.getId(),
                 user.getEmail(),
@@ -24,6 +27,7 @@ public record UserResponse(
                 user.getFirstName(),
                 user.getLastName(),
                 user.getCompanyId(),
+                List.copyOf(companyIds),
                 user.getStatus().name(),
                 user.getRoles().stream().map(Role::getCode).sorted().toList(),
                 user.getCreatedAt());

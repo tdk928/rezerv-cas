@@ -10,6 +10,7 @@ import bg.rezerv.cas.web.dto.RefreshRequest;
 import bg.rezerv.cas.web.dto.RegisterRequest;
 import bg.rezerv.cas.web.dto.UserResponse;
 import bg.rezerv.cas.web.error.ApiException;
+import java.util.List;
 import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,17 +30,20 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final RefreshTokenService refreshTokenService;
+    private final CompanyAssignmentService companyAssignmentService;
 
     public AuthService(UserRepository userRepository,
                        RoleRepository roleRepository,
                        PasswordEncoder passwordEncoder,
                        JwtService jwtService,
-                       RefreshTokenService refreshTokenService) {
+                       RefreshTokenService refreshTokenService,
+                       CompanyAssignmentService companyAssignmentService) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
         this.refreshTokenService = refreshTokenService;
+        this.companyAssignmentService = companyAssignmentService;
     }
 
     @Transactional
@@ -93,7 +97,17 @@ public class AuthService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "USER_NOT_FOUND",
                         "Потребителят не е намерен"));
-        return UserResponse.from(user);
+        return companyAssignmentService.toResponse(user);
+    }
+
+    /** Сменя активната фирма и издава нов JWT с обновен companyId. */
+    @Transactional
+    public AuthResponse switchCompany(Long userId, Long companyId) {
+        companyAssignmentService.switchActiveCompany(userId, companyId);
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "USER_NOT_FOUND",
+                        "Потребителят не е намерен"));
+        return tokens(user);
     }
 
     private void requireActive(User user) {
@@ -105,6 +119,8 @@ public class AuthService {
     private AuthResponse tokens(User user) {
         String access = jwtService.issueAccessToken(user);
         String refresh = refreshTokenService.issue(user.getId());
-        return new AuthResponse(access, refresh, jwtService.accessTtlSeconds(), UserResponse.from(user));
+        List<Long> companyIds = companyAssignmentService.companyIdsFor(user.getId());
+        return new AuthResponse(
+                access, refresh, jwtService.accessTtlSeconds(), UserResponse.from(user, companyIds));
     }
 }

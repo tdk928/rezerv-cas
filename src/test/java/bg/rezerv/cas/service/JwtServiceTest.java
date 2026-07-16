@@ -49,7 +49,7 @@ class JwtServiceTest {
         assertThat(claims.getSubject()).isEqualTo("42");
         assertThat(claims.get("email", String.class)).isEqualTo("ivan@example.bg");
         assertThat(claims.get("roles", List.class)).containsExactly("BUSINESS_OWNER");
-        assertThat(claims.get("companyId", Long.class)).isEqualTo(7L);
+        assertThat(claims.get("companyId", String.class)).isEqualTo("7");
         assertThat(claims.getId()).isNotBlank();
         assertThat(claims.getExpiration().getTime() - claims.getIssuedAt().getTime())
                 .isEqualTo(Duration.ofMinutes(15).toMillis());

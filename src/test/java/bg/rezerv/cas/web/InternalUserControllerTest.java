@@ -33,7 +33,7 @@ class InternalUserControllerTest {
         when(companyAssignmentService.assignCompany(eq(42L), eq(100L)))
                 .thenReturn(new UserResponse(
                         42L, "ivan@example.bg", null, "Иван", "Иванов", 100L,
-                        "ACTIVE", List.of("CLIENT", "BUSINESS_OWNER"),
+                        List.of(100L), "ACTIVE", List.of("CLIENT", "BUSINESS_OWNER"),
                         Instant.parse("2026-07-15T00:00:00Z")));
 
         mockMvc.perform(post("/internal/users/42/assign-company")

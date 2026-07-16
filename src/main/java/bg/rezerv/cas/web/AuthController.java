@@ -5,6 +5,7 @@ import bg.rezerv.cas.web.dto.AuthResponse;
 import bg.rezerv.cas.web.dto.LoginRequest;
 import bg.rezerv.cas.web.dto.RefreshRequest;
 import bg.rezerv.cas.web.dto.RegisterRequest;
+import bg.rezerv.cas.web.dto.SwitchCompanyRequest;
 import bg.rezerv.cas.web.dto.UserResponse;
 import bg.rezerv.cas.web.error.ApiException;
 import jakarta.validation.Valid;
@@ -50,5 +51,16 @@ public class AuthController {
             throw new ApiException(HttpStatus.UNAUTHORIZED, "UNAUTHORIZED", "Липсва автентикация");
         }
         return authService.me(userId);
+    }
+
+    /** Сменя активната фирма → нов JWT с companyId. Изисква X-User-Id от gateway. */
+    @PostMapping("/switch-company")
+    public AuthResponse switchCompany(
+            @RequestHeader(name = ContextHeaders.USER_ID, required = false) Long userId,
+            @Valid @RequestBody SwitchCompanyRequest request) {
+        if (userId == null) {
+            throw new ApiException(HttpStatus.UNAUTHORIZED, "UNAUTHORIZED", "Липсва автентикация");
+        }
+        return authService.switchCompany(userId, request.companyId());
     }
 }
