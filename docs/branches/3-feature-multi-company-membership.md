@@ -13,9 +13,12 @@
 - **`POST /auth/switch-company`** `{ companyId }` → сменя активната + **нов JWT**
   (AuthResponse). Грешка `NOT_COMPANY_MEMBER` ако няма membership.
 - **`UserResponse`**: поле `companyIds: Long[]` (всички membership-и) + `companyId` (активна).
+- **JWT `companyId` claim като string** (не Long) — иначе gateway `getStringClaim` → 401 →
+  frontend logout веднага след login за user с фирма.
+- **`access-ttl: 30m`** (тест с 1m мина; production-ready TTL).
 
 ## Решения
-- JWT остава с **един** `companyId` (gateway без промяна) — „контекстът“ е активната фирма.
+- JWT остава с **един** `companyId` (string) — „контекстът“ е активната фирма.
 - Имена/ЕИК на фирмите живеят в business; CAS държи само ID-та.
 
 ## Как се тества

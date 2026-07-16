@@ -26,11 +26,15 @@ public class JwtService {
     public String issueAccessToken(User user) {
         Instant now = Instant.now();
         List<String> roles = user.getRoles().stream().map(Role::getCode).sorted().toList();
-        return Jwts.builder()
+        // companyId като string — gateway чете getStringClaim; числов claim → 401 → frontend logout
+        var builder = Jwts.builder()
                 .subject(String.valueOf(user.getId()))
                 .claim("email", user.getEmail())
-                .claim("roles", roles)
-                .claim("companyId", user.getCompanyId())
+                .claim("roles", roles);
+        if (user.getCompanyId() != null) {
+            builder.claim("companyId", String.valueOf(user.getCompanyId()));
+        }
+        return builder
                 .id(UUID.randomUUID().toString())
                 .issuedAt(java.util.Date.from(now))
                 .expiration(java.util.Date.from(now.plus(properties.accessTtl())))
