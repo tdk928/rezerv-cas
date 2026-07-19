@@ -35,4 +35,16 @@ public class UserQueryService {
                 .map(UserSummaryResponse::from)
                 .toList();
     }
+
+    @Transactional(readOnly = true)
+    public UserSummaryResponse getByEmail(String email) {
+        if (email == null || email.isBlank()) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, "EMAIL_REQUIRED", "Имейлът е задължителен");
+        }
+        String normalized = email.strip().toLowerCase();
+        return userRepository.findByEmail(normalized)
+                .map(UserSummaryResponse::from)
+                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "USER_NOT_FOUND",
+                        "Потребител с този email не е намерен"));
+    }
 }

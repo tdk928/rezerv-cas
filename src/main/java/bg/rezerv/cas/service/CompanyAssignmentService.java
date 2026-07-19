@@ -25,6 +25,7 @@ public class CompanyAssignmentService {
 
     private static final Logger log = LoggerFactory.getLogger(CompanyAssignmentService.class);
     private static final String BUSINESS_OWNER_ROLE = "BUSINESS_OWNER";
+    private static final String STAFF_ROLE = "STAFF";
 
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
@@ -58,6 +59,32 @@ public class CompanyAssignmentService {
         user.setCompanyId(companyId);
         User saved = userRepository.save(user);
         log.info("Assigned companyId={} to user id={} (active), role={}", companyId, userId, BUSINESS_OWNER_ROLE);
+        return toResponse(saved);
+    }
+
+    /**
+     * Свързва user като STAFF към фирма: membership в user_companies + роля STAFF.
+     * Не сменя активната company_id, освен ако е null (за да не пипа owner сесията).
+     * Идемпотентно: повторно викане с вече свързан staff е OK.
+     */
+    @Transactional
+    public UserResponse assignStaff(Long userId, Long companyId) {
+        User user = requireActiveUser(userId);
+        Role staffRole = roleRepository.findByCode(STAFF_ROLE)
+                .orElseThrow(() -> new IllegalStateException("Липсва seed роля " + STAFF_ROLE));
+
+        if (!userCompanyRepository.existsByUserIdAndCompanyId(userId, companyId)) {
+            userCompanyRepository.save(UserCompany.builder()
+                    .userId(userId)
+                    .companyId(companyId)
+                    .build());
+        }
+        user.getRoles().add(staffRole);
+        if (user.getCompanyId() == null) {
+            user.setCompanyId(companyId);
+        }
+        User saved = userRepository.save(user);
+        log.info("Assigned STAFF companyId={} to user id={}", companyId, userId);
         return toResponse(saved);
     }
 

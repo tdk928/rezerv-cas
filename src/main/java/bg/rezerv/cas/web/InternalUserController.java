@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
@@ -42,9 +43,20 @@ public class InternalUserController {
         return userQueryService.findByIds(request.ids());
     }
 
+    @GetMapping("/by-email")
+    public UserSummaryResponse getByEmail(@RequestParam String email) {
+        return userQueryService.getByEmail(email);
+    }
+
     @PostMapping("/{userId}/assign-company")
     public UserResponse assignCompany(@PathVariable Long userId,
                                         @Valid @RequestBody AssignCompanyRequest request) {
         return companyAssignmentService.assignCompany(userId, request.companyId());
+    }
+
+    @PostMapping("/{userId}/assign-staff")
+    public UserResponse assignStaff(@PathVariable Long userId,
+                                    @Valid @RequestBody AssignCompanyRequest request) {
+        return companyAssignmentService.assignStaff(userId, request.companyId());
     }
 }
