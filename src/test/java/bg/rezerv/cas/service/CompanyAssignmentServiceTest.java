@@ -42,6 +42,7 @@ class CompanyAssignmentServiceTest {
 
     private final Role clientRole = Role.builder().id(4L).code("CLIENT").build();
     private final Role ownerRole = Role.builder().id(2L).code("BUSINESS_OWNER").build();
+    private final Role staffRole = Role.builder().id(3L).code("STAFF").build();
 
     @Test
     void assignCompanyAddsMembershipSetsActiveAndAddsBusinessOwnerRole() {
@@ -170,5 +171,57 @@ class CompanyAssignmentServiceTest {
         assertThatThrownBy(() -> service.assignCompany(99L, 100L))
                 .isInstanceOf(ApiException.class)
                 .hasMessageContaining("не е намерен");
+    }
+
+    @Test
+    void assignStaffAddsMembershipAndStaffRoleWithoutChangingActiveCompany() {
+        User user = User.builder()
+                .id(42L)
+                .email("staff@example.bg")
+                .passwordHash("hash")
+                .firstName("Мария")
+                .lastName("Петрова")
+                .companyId(5L)
+                .status(UserStatus.ACTIVE)
+                .roles(new HashSet<>(Set.of(clientRole)))
+                .build();
+        when(userRepository.findById(42L)).thenReturn(Optional.of(user));
+        when(userCompanyRepository.existsByUserIdAndCompanyId(42L, 100L)).thenReturn(false);
+        when(roleRepository.findByCode("STAFF")).thenReturn(Optional.of(staffRole));
+        when(userRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+        when(userCompanyRepository.findByUserIdOrderByCreatedAtAsc(42L)).thenReturn(List.of(
+                UserCompany.builder().userId(42L).companyId(5L).build(),
+                UserCompany.builder().userId(42L).companyId(100L).build()));
+
+        var response = service.assignStaff(42L, 100L);
+
+        assertThat(response.companyId()).isEqualTo(5L);
+        assertThat(response.roles()).contains("STAFF");
+        verify(userCompanyRepository).save(any(UserCompany.class));
+    }
+
+    @Test
+    void assignStaffIsIdempotentWhenAlreadyMember() {
+        User user = User.builder()
+                .id(42L)
+                .email("staff@example.bg")
+                .passwordHash("hash")
+                .firstName("Мария")
+                .lastName("Петрова")
+                .companyId(100L)
+                .status(UserStatus.ACTIVE)
+                .roles(new HashSet<>(Set.of(clientRole, staffRole)))
+                .build();
+        when(userRepository.findById(42L)).thenReturn(Optional.of(user));
+        when(userCompanyRepository.existsByUserIdAndCompanyId(42L, 100L)).thenReturn(true);
+        when(roleRepository.findByCode("STAFF")).thenReturn(Optional.of(staffRole));
+        when(userRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+        when(userCompanyRepository.findByUserIdOrderByCreatedAtAsc(42L))
+                .thenReturn(List.of(UserCompany.builder().userId(42L).companyId(100L).build()));
+
+        var response = service.assignStaff(42L, 100L);
+
+        assertThat(response.roles()).contains("STAFF");
+        verify(userCompanyRepository, never()).save(any());
     }
 }

@@ -6,6 +6,7 @@
 
 | # | Branch | Дата | Обобщение |
 |---|--------|------|-----------|
+| 5 | feature/staff-role-assignment | 2026-07-19 | Internal: `GET /users/by-email`, `POST /users/{id}/assign-staff` → роля STAFF + company membership (за служители). |
 | 4 | feature/internal-user-lookup | 2026-07-17 | Internal user lookup: `GET /internal/users/{id}` + `POST /internal/users/lookup` → `UserSummaryResponse` (id/email/име). За admin фирми в business. |
 | 3 | feature/multi-company-membership | 2026-07-16 | Multi-company: `user_companies` membership; `users.company_id` = активна фирма (JWT). assign-company добавя membership (позволява 2+ фирми); `POST /auth/switch-company` + `UserResponse.companyIds`. JWT `companyId` като **string**; access TTL **30m**. |
 | 2 | feature/company-assignment-internal | 2026-07-15 | Internal `POST /internal/users/{userId}/assign-company` — след B2B onboarding задава `company_id` + добавя роля `BUSINESS_OWNER` (запазва CLIENT). Вика се от rezerv-business. 4 нови unit теста (общо 19). |
