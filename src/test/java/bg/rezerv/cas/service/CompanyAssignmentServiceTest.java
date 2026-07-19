@@ -19,11 +19,13 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import bg.rezerv.cas.web.dto.CreateStaffUserRequest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 @ExtendWith(MockitoExtension.class)
 class CompanyAssignmentServiceTest {
@@ -36,6 +38,9 @@ class CompanyAssignmentServiceTest {
 
     @Mock
     private UserCompanyRepository userCompanyRepository;
+
+    @Mock
+    private PasswordEncoder passwordEncoder;
 
     @InjectMocks
     private CompanyAssignmentService service;
@@ -197,6 +202,26 @@ class CompanyAssignmentServiceTest {
 
         assertThat(response.companyId()).isEqualTo(5L);
         assertThat(response.roles()).contains("STAFF");
+        verify(userCompanyRepository).save(any(UserCompany.class));
+    }
+
+    @Test
+    void createStaffUserCreatesAccountWithStaffRole() {
+        when(userRepository.existsByEmail("new.staff@example.bg")).thenReturn(false);
+        when(roleRepository.findByCode("CLIENT")).thenReturn(Optional.of(clientRole));
+        when(roleRepository.findByCode("STAFF")).thenReturn(Optional.of(staffRole));
+        when(passwordEncoder.encode("parola123")).thenReturn("hashed");
+        when(userRepository.save(any())).thenAnswer(inv -> {
+            User u = inv.getArgument(0);
+            u.setId(55L);
+            return u;
+        });
+
+        var summary = service.createStaffUser(new CreateStaffUserRequest(
+                "new.staff@example.bg", "parola123", "Нова", "Служителка", "+359888", 100L));
+
+        assertThat(summary.id()).isEqualTo(55L);
+        assertThat(summary.email()).isEqualTo("new.staff@example.bg");
         verify(userCompanyRepository).save(any(UserCompany.class));
     }
 

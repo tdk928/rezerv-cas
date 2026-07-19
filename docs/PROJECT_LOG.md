@@ -6,6 +6,7 @@
 
 | # | Branch | Дата | Обобщение |
 |---|--------|------|-----------|
+| 6 | feature/create-staff-user | 2026-07-19 | Internal: `POST /internal/users/create-staff` — нов user CLIENT+STAFF + company membership (owner onboarding). |
 | 5 | feature/staff-role-assignment | 2026-07-19 | Internal: `GET /users/by-email`, `POST /users/{id}/assign-staff` → роля STAFF + company membership (за служители). |
 | 4 | feature/internal-user-lookup | 2026-07-17 | Internal user lookup: `GET /internal/users/{id}` + `POST /internal/users/lookup` → `UserSummaryResponse` (id/email/име). За admin фирми в business. |
 | 3 | feature/multi-company-membership | 2026-07-16 | Multi-company: `user_companies` membership; `users.company_id` = активна фирма (JWT). assign-company добавя membership (позволява 2+ фирми); `POST /auth/switch-company` + `UserResponse.companyIds`. JWT `companyId` като **string**; access TTL **30m**. |

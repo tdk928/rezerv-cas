@@ -3,6 +3,7 @@ package bg.rezerv.cas.web;
 import bg.rezerv.cas.service.CompanyAssignmentService;
 import bg.rezerv.cas.service.UserQueryService;
 import bg.rezerv.cas.web.dto.AssignCompanyRequest;
+import bg.rezerv.cas.web.dto.CreateStaffUserRequest;
 import bg.rezerv.cas.web.dto.LookupUsersRequest;
 import bg.rezerv.cas.web.dto.UserResponse;
 import bg.rezerv.cas.web.dto.UserSummaryResponse;
@@ -58,5 +59,10 @@ public class InternalUserController {
     public UserResponse assignStaff(@PathVariable Long userId,
                                     @Valid @RequestBody AssignCompanyRequest request) {
         return companyAssignmentService.assignStaff(userId, request.companyId());
+    }
+
+    @PostMapping("/create-staff")
+    public UserSummaryResponse createStaff(@Valid @RequestBody CreateStaffUserRequest request) {
+        return companyAssignmentService.createStaffUser(request);
     }
 }
