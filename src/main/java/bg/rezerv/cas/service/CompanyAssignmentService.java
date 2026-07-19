@@ -7,12 +7,17 @@ import bg.rezerv.cas.domain.UserStatus;
 import bg.rezerv.cas.repository.RoleRepository;
 import bg.rezerv.cas.repository.UserCompanyRepository;
 import bg.rezerv.cas.repository.UserRepository;
+import bg.rezerv.cas.web.dto.CreateStaffUserRequest;
 import bg.rezerv.cas.web.dto.UserResponse;
+import bg.rezerv.cas.web.dto.UserSummaryResponse;
 import bg.rezerv.cas.web.error.ApiException;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,17 +31,21 @@ public class CompanyAssignmentService {
     private static final Logger log = LoggerFactory.getLogger(CompanyAssignmentService.class);
     private static final String BUSINESS_OWNER_ROLE = "BUSINESS_OWNER";
     private static final String STAFF_ROLE = "STAFF";
+    private static final String CLIENT_ROLE = "CLIENT";
 
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final UserCompanyRepository userCompanyRepository;
+    private final PasswordEncoder passwordEncoder;
 
     public CompanyAssignmentService(UserRepository userRepository,
                                     RoleRepository roleRepository,
-                                    UserCompanyRepository userCompanyRepository) {
+                                    UserCompanyRepository userCompanyRepository,
+                                    PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.userCompanyRepository = userCompanyRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Transactional
@@ -60,6 +69,39 @@ public class CompanyAssignmentService {
         User saved = userRepository.save(user);
         log.info("Assigned companyId={} to user id={} (active), role={}", companyId, userId, BUSINESS_OWNER_ROLE);
         return toResponse(saved);
+    }
+
+    /**
+     * Owner onboarding: нов акаунт с CLIENT+STAFF, membership към companyId.
+     */
+    @Transactional
+    public UserSummaryResponse createStaffUser(CreateStaffUserRequest request) {
+        String email = request.email().toLowerCase().strip();
+        if (userRepository.existsByEmail(email)) {
+            throw new ApiException(HttpStatus.CONFLICT, "EMAIL_ALREADY_EXISTS",
+                    "Потребител с този email вече съществува");
+        }
+        Role clientRole = roleRepository.findByCode(CLIENT_ROLE)
+                .orElseThrow(() -> new IllegalStateException("Липсва seed роля " + CLIENT_ROLE));
+        Role staffRole = roleRepository.findByCode(STAFF_ROLE)
+                .orElseThrow(() -> new IllegalStateException("Липсва seed роля " + STAFF_ROLE));
+
+        User user = User.builder()
+                .email(email)
+                .phone(request.phone().strip())
+                .passwordHash(passwordEncoder.encode(request.password()))
+                .firstName(request.firstName().strip())
+                .lastName(request.lastName().strip())
+                .companyId(request.companyId())
+                .roles(new HashSet<>(Set.of(clientRole, staffRole)))
+                .build();
+        user = userRepository.save(user);
+        userCompanyRepository.save(UserCompany.builder()
+                .userId(user.getId())
+                .companyId(request.companyId())
+                .build());
+        log.info("Created STAFF user id={} companyId={}", user.getId(), request.companyId());
+        return UserSummaryResponse.from(user);
     }
 
     /**

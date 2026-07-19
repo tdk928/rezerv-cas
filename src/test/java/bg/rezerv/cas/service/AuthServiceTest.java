@@ -81,7 +81,7 @@ class AuthServiceTest {
 
     @Test
     void register_създава_user_с_роля_CLIENT_и_връща_двата_token_а() {
-        var request = new RegisterRequest("Ivan@Example.BG", "parola123", "Иван", "Иванов", null);
+        var request = new RegisterRequest("Ivan@Example.BG", "parola123", "Иван", "Иванов", "+359888123456");
         when(userRepository.existsByEmail("ivan@example.bg")).thenReturn(false);
         when(roleRepository.findByCode("CLIENT")).thenReturn(Optional.of(clientRole));
         when(userRepository.save(any(User.class))).thenAnswer(inv -> inv.getArgument(0));
@@ -109,7 +109,7 @@ class AuthServiceTest {
         when(userRepository.existsByEmail("ivan@example.bg")).thenReturn(true);
 
         assertThatThrownBy(() -> authService.register(
-                new RegisterRequest("ivan@example.bg", "parola123", "Иван", "Иванов", null)))
+                new RegisterRequest("ivan@example.bg", "parola123", "Иван", "Иванов", "+359888123456")))
                 .isInstanceOfSatisfying(ApiException.class, ex -> {
                     assertThat(ex.status()).isEqualTo(HttpStatus.CONFLICT);
                     assertThat(ex.code()).isEqualTo("EMAIL_ALREADY_EXISTS");

@@ -58,7 +58,7 @@ public class AuthService {
 
         User user = User.builder()
                 .email(email)
-                .phone(request.phone())
+                .phone(request.phone().strip())
                 .passwordHash(passwordEncoder.encode(request.password()))
                 .firstName(request.firstName().strip())
                 .lastName(request.lastName().strip())

@@ -2,12 +2,15 @@ package bg.rezerv.cas.web.dto;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
-public record RegisterRequest(
+/** Owner onboarding: създава акаунт + STAFF + company membership. */
+public record CreateStaffUserRequest(
         @NotBlank @Email String email,
         @NotBlank @Size(min = 8, max = 72) String password,
         @NotBlank @Size(max = 100) String firstName,
         @NotBlank @Size(max = 100) String lastName,
-        @NotBlank @Size(max = 32) String phone) {
+        @NotBlank @Size(max = 32) String phone,
+        @NotNull Long companyId) {
 }
